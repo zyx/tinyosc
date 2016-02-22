@@ -23,6 +23,7 @@ use std::io;
 
 use Argument;
 
+#[derive(Debug)]
 pub struct Message<'a> {
     pub path: &'a str,
     pub arguments: Vec<Argument<'a>>
