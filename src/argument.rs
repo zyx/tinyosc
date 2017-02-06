@@ -29,6 +29,7 @@ use byteorder::{ByteOrder, WriteBytesExt, BigEndian};
 pub enum Argument<'a> {
     i(i32),
     f(f32),
+    d(f64),
     s(&'a str),
     T,
     F,
@@ -64,6 +65,13 @@ impl<'a> Argument<'a> {
                 Ok(Argument::f(n))
             },
 
+            'd' => {
+                let n = BigEndian::read_f64(*slice);
+                *slice = &slice[8 ..];
+                Ok(Argument::d(n))
+            },
+
+
             's' => {
                 // find the terminating null
                 let next_null = match strchr(slice, 0) {
@@ -98,6 +106,7 @@ impl<'a> Argument<'a> {
             Argument::None => 'N',
             Argument::i(_) => 'i',
             Argument::f(_) => 'f',
+            Argument::d(_) => 'd',
             Argument::s(_) => 's'
         }
     }
@@ -108,6 +117,7 @@ impl<'a> Argument<'a> {
 
             Argument::i(arg) => into.write_i32::<BigEndian>(arg),
             Argument::f(arg) => into.write_f32::<BigEndian>(arg),
+            Argument::d(arg) => into.write_f64::<BigEndian>(arg),
 
             Argument::s(arg) => {
                 try!(into.write_all(arg.as_ref()));
@@ -146,6 +156,13 @@ impl<'a> From<f32> for Argument<'a> {
         Argument::f(f)
     }
 }
+
+impl<'a> From<f64> for Argument<'a> {
+    fn from(d: f64) -> Argument<'a> {
+        Argument::d(d)
+    }
+}
+
 
 impl<'a> From<&'a str> for Argument<'a> {
     fn from(s: &'a str) -> Argument<'a> {
